@@ -7,21 +7,182 @@
   <meta name="keywords" content="Bleu Strnad">
   <meta name = "author" content="Bleu Strnad">
   <link href="output.css" rel="stylesheet">
+  <style>
+  /* Responsive image class */
+  .responsive-img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    object-fit: contain;
+  }
+  /* Responsive container */
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    position: relative;
+  }
+  @media (max-width: 1024px) {
+    .container {
+      padding-left: 0.5rem;
+      padding-right: 0.5rem;
+    }
+    .py-24 {
+      padding-top: 2rem !important;
+      padding-bottom: 2rem !important;
+    }
+    .mb-20 {
+      margin-bottom: 1.5rem !important;
+    }
+  }
+  @media (max-width: 768px) {
+    h1 {
+      font-size: 1.5rem;
+    }
+    p, .text-base {
+      font-size: 1rem;
+    }
+    .flex {
+      flex-direction: column !important;
+      align-items: center !important;
+    }
+    .lg\:w-1\/2, .sm\:w-1\/2, .lg\:w-2\/3 {
+      width: 100% !important;
+      max-width: 100% !important;
+    }
+    .px-5 {
+      padding-left: 1rem !important;
+      padding-right: 1rem !important;
+    }
+    .py-24 {
+      padding-top: 1rem !important;
+      padding-bottom: 1rem !important;
+    }
+    .mb-20 {
+      margin-bottom: 1rem !important;
+    }
+    nav {
+      flex-direction: column !important;
+      gap: 0.5rem;
+    }
+  }
+  @media (max-width: 480px) {
+    h1 {
+      font-size: 1.1rem;
+    }
+    .text-xl {
+      font-size: 1rem;
+    }
+    .container {
+      padding-left: 0.25rem;
+      padding-right: 0.25rem;
+    }
+  }
+  .hover-link {
+    color: blue;
+    text-decoration: none;
+    transition: text-decoration 0.2s;
+  }
+  .hover-link:hover {
+    text-decoration: underline;
+  }
+  .hamburger {
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 101;
+    background: #fff;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    border: none;
+    padding: 0;
+    width: 28px;
+    height: 28px;
+    position: absolute;
+    top: 18px;
+    right: 18px;
+  }
+  .hamburger svg {
+    width: 100%;
+    height: 100%;
+  }
+  @media (max-width: 768px) {
+    .hamburger {
+      display: flex;
+      background: #fff;
+      border-radius: 4px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      z-index: 100;
+      position: absolute;
+      top: 18px;
+      right: 18px;
+    }
+    nav.navbar-links {
+      display: none;
+      flex-direction: column;
+      width: 100vw;
+      background: #fff;
+      position: fixed;
+      top: 56px;
+      left: 0;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      z-index: 99;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+    nav.navbar-links.open {
+      display: flex;
+      opacity: 1;
+      pointer-events: auto;
+      animation: fadeIn 0.25s;
+    }
+    nav.navbar-links a {
+      margin: 1rem 0;
+      text-align: center;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+  }
+  .title-font {
+    font-weight: 500;
+    font-size: 1.25rem;
+    letter-spacing: normal;
+    line-height: normal;
+  }
+  </style>
 </head>
-<body class=>
+<body>
 <!-- Nav Bar-->
-  <header class="text-gray-600 body-font">
-  <div class="container mx-auto flex flex-wrap p-5 flex-col md:flex-row items-center">
+<header class="text-gray-600 body-font relative">
+  <div class="container mx-auto flex flex-wrap p-5 flex-col md:flex-row items-center relative">
     <a class="flex title-font font-medium items-center text-gray-900 mb-4 md:mb-0">
       <span class="ml-3 text-xl">Bleu Strnad</span>
     </a>
-    <nav class="md:ml-auto md:mr-auto flex flex-wrap items-center text-base justify-center">
+    <div class="hamburger" id="hamburger-menu" aria-label="Open navigation" tabindex="0" style="padding:2px;">
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="5.5" cy="6.5" r="1.5" fill="#888"/>
+        <circle cx="11" cy="6.5" r="1.5" fill="#888"/>
+        <circle cx="16.5" cy="6.5" r="1.5" fill="#888"/>
+        <circle cx="5.5" cy="11" r="1.5" fill="#888"/>
+        <circle cx="11" cy="11" r="1.5" fill="#888"/>
+        <circle cx="16.5" cy="11" r="1.5" fill="#888"/>
+        <circle cx="5.5" cy="15.5" r="1.5" fill="#888"/>
+        <circle cx="11" cy="15.5" r="1.5" fill="#888"/>
+        <circle cx="16.5" cy="15.5" r="1.5" fill="#888"/>
+      </svg>
+    </div>
+    <nav class="md:ml-auto md:mr-auto flex flex-wrap items-center text-base justify-center navbar-links" id="navbar-links">
       <a href="index.html" class="mr-5 hover:text-gray-900">Home</a>
       <a href="about.html" class="mr-5 hover:text-gray-900">About</a>
       <a href="projects.html" class="mr-5 hover:text-gray-900">Projects</a>
-      <a href="contact.html" class=" hover:text-gray-900">Contact</a>
+      <a href="contact.html" class="hover:text-gray-900">Contact</a>
     </nav>
-    
   </div>
 </header>
 <!-- Main-->
@@ -34,15 +195,15 @@
         <p class="lg:w-2/3 mx-auto leading-relaxed text-base"><br>I created this forum using Next.js and a great deal of TypeScript. I chose to use Vercel to launch along with Prisma and Neon for ease with scalability. After some long nights and a lot of debugging, the first version is out. Git for version control and various lint tools proved extremely useful for this project, especially because of the complexity associated with handling databases, a front-end, user input, authentication, and a back-end.</p>
     </div>
     <div class="flex flex-wrap justify-center items-center mt-8">
-      <div class="lg:w-1/2 sm:w-1/2 p-4">
-        <div class="flex relative">
-          <img alt="" class="absolute inset-0 w-full h-full object-cover object-center" src="ctflfgLogo.png">
+      <div class="lg:w-1/2 sm:w-1/2 p-4 flex justify-center items-center mx-auto">
+        <div class="flex relative justify-center items-center w-full">
+          <img alt="" class="responsive-img mx-auto" src="ctflfgLogo.png">
         </div>
-    </div>
+      </div>
     <div class="flex flex-col items-center w-full mt-4">
   <p class="lg:w-2/3 mx-auto leading-relaxed text-base text-center">
     CTFLFG is now live at 
-    <a href="https://www.ctflfg.com" style="color: blue; text-decoration: none;" onmouseover="this.style.textDecoration='underline'" onmouseout="this.style.textDecoration='none'">
+    <a href="https://www.ctflfg.com" class="hover-link">
       ctflfg.com
     </a>.
   </p>
@@ -61,5 +222,17 @@
       </p>
     </div>
   </footer>
+  <script>
+  const hamburger = document.getElementById('hamburger-menu');
+  const navLinks = document.getElementById('navbar-links');
+  hamburger.addEventListener('click', () => {
+    navLinks.classList.toggle('open');
+  });
+  Array.from(navLinks.getElementsByTagName('a')).forEach(link => {
+    link.addEventListener('click', () => {
+      navLinks.classList.remove('open');
+    });
+  });
+</script>
 </body>
 </html>
