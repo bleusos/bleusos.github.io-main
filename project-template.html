@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CTFLFG | Bleu Strnad</title>
+<title>Project Name | Bleu Strnad</title>
 <link rel="icon" href="favicon-32x32.png">
 <style>
   :root {
@@ -86,8 +86,27 @@
     font-size: 0.95rem;
   }
 
+  .section-title {
+    margin-bottom: 0.8rem;
+    font-size: clamp(1.1rem, 2.3vw, 1.5rem);
+  }
+
   .content p + p {
     margin-top: 1rem;
+  }
+
+  .tech-list {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+  }
+
+  .tech-list li {
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.3rem 0.7rem;
+    font-size: 0.95rem;
   }
 
   .gallery {
@@ -200,32 +219,40 @@
 <body>
   <main class="project-page">
     <header class="panel">
-      <h1 class="project-title">CTFLFG</h1>
-      <p class="project-subtitle">Capture the Flag (CTF) Looking for Group Forum | July 6th, 2025</p>
+      <h1 class="project-title">[PROJECT_NAME]</h1>
+      <p class="project-subtitle">[ONE-LINE TAGLINE] | September 14th, 2007 (enter the date of project)</p>
     </header>
 
     <section class="panel content" aria-labelledby="overview-heading">
-      <h2 id="overview-heading">Project Overview</h2>
-      <p>CTFLFG is a Looking-for-Group (LFG) forum built specifically for CTF (Capture the Flag) enthusiasts, ethical hackers, and cybersecurity learners of all skill levels.</p>
-      <p>I created this forum using Next.js and a great deal of TypeScript. I chose to use Vercel to launch along with Prisma and Neon for ease with scalability.</p>
-      <p>After some long nights and a lot of debugging, the first version is out. Git for version control and various lint tools proved extremely useful for this project, especially because of the complexity associated with handling databases, a front-end, user input, authentication, and a back-end. CTFLFG is now live at ctflfg.com.</p>
-      <p>Update as of 3/22/26: CTFLFG is set to shutdown due to its entirely free nature and maintenance costs by 2027. It has been a fun project.</p>
+      <h2 class="section-title" id="overview-heading">Project Overview</h2>
+      <p>a very nice</p>
+      <p>description of my</p>
+      <p>awesome new project</p>
     </section>
 
+    <!-- add tech stack panel if i want-->
+   <!-- <section class="panel" aria-labelledby="stack-heading">
+      <h2 class="section-title" id="stack-heading">Tech Stack</h2>
+      <ul class="tech-list">
+        <li>[Tech 1]</li>
+        <li>[Tech 2]</li>
+        <li>[Tech 3]</li>
+        <li>[Tech 4]</li>
+      </ul>
+    </section>
+    -->
     <section class="panel" aria-labelledby="gallery-heading">
-      <h2 id="gallery-heading">Screenshots</h2>
+      <h2 class="section-title" id="gallery-heading">Screenshots</h2>
       <p class="gallery-subtitle">Click to enhance</p>
       <div class="gallery">
-        <figure><img src="images/ctflfg/ctflfg1.png" alt="CTFLFG screenshot 1"></figure>
-        <figure><img src="images/ctflfg/ctflfg2.png" alt="CTFLFG screenshot 2"></figure>
-        <figure><img src="images/ctflfg/ctflfg3.png" alt="CTFLFG screenshot 3"></figure>
-        <figure><img src="images/ctflfg/ctflfg4.png" alt="CTFLFG screenshot 4"></figure>
-        <figure><img src="images/ctflfg/ctflfg5.png" alt="CTFLFG screenshot 5"></figure>
+        <figure><img src="images/ctflfg/ctflfg1.png" alt="Project screenshot 1"></figure>
+        <figure><img src="images/ctflfg/ctflfg2.png" alt="Project screenshot 2"></figure>
+        <figure><img src="images/ctflfg/ctflfg3.png" alt="Project screenshot 3"></figure>
       </div>
     </section>
 
     <nav class="actions" aria-label="Project links">
-      <a class="button-link" href="https://ctflfg.com" target="_blank" rel="noopener noreferrer">Visit ctflfg.com</a>
+      <a class="button-link" href="#A LIVE URL" target="_blank" rel="noopener noreferrer">Visit GitHub Repository</a>
       <a class="button-link" href="portfolio.html">Back to Portfolio</a>
     </nav>
   </main>
