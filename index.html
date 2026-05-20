@@ -5,97 +5,222 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Bleu Strnad</title>
 <link rel="icon" href="favicon-32x32.png">
-
 <style>
-  * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+  :root {
+    color-scheme: dark;
+    --bg: #041522;
+    --panel: rgba(7, 18, 32, 0.92);
+    --border: rgba(125, 224, 196, 0.16);
+    --text: #d8e9f1;
+    --muted: #7c99a8;
+    --accent: #79e2c4;
+    --gold: #d6c17d;
   }
-  html {
-    height: 100%;
-  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { min-height: 100%; }
   body {
     min-height: 100%;
-    width: 100%;
-    font-family: 'Lucida Console', monospace;
-    background-color: #0000AA;
-    color: #FFFFFF;
+    font-family: 'Lucida Console', Monaco, monospace;
+    background: radial-gradient(circle at top, rgba(123,226,198,0.05), transparent 18%),
+                linear-gradient(180deg, #031820 0%, #040b14 100%);
+    color: var(--text);
     overflow-x: hidden;
-    overflow-y: auto;
-    opacity: 1;
-    transition: opacity 1.5s ease-in-out;
-    padding: 1.25rem 1rem calc(5.5rem + env(safe-area-inset-bottom));
   }
-  body.fade-out {
-    opacity: 0;
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px) 0 0 / 5rem 5rem,
+                radial-gradient(circle at 18% 12%, rgba(255,255,255,0.08), transparent 16%);
+    pointer-events: none;
   }
-  .bsod-container {
+  .page-body {
+    position: relative;
+    z-index: 1;
     max-width: 900px;
-    width: 100%;
     margin: 0 auto;
-    padding: 2%;
+    padding: 1.75rem 1.25rem 2.5rem;
+  }
+  header {
+    margin-bottom: 2rem;
+  }
+  .eyebrow {
+    color: var(--gold);
+    letter-spacing: 0.24em;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    margin-bottom: 0.8rem;
   }
   h1 {
-    font-size: 2em;
-    margin-bottom: 1em;
+    font-size: clamp(2.4rem, 5vw, 3.6rem);
+    letter-spacing: 0.08em;
+    line-height: 1.05;
   }
-  p {
-    font-size: 1em;
-    line-height: 1.5em;
-    margin-bottom: 1em;
+  .intro {
+    margin-top: 1rem;
+    color: var(--muted);
+    font-size: 1rem;
+    line-height: 1.8;
   }
-  .technical-info {
-    margin-top: 2em;
-    font-weight: bold;
+  .panel {
+    background: linear-gradient(180deg, rgba(7, 18, 32, 0.94), rgba(4, 12, 22, 0.92));
+    border: 1px solid var(--border);
+    border-radius: 1.3rem;
+    padding: 1.35rem;
+    margin-bottom: 1.25rem;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.03), 0 22px 50px rgba(0,0,0,0.22);
   }
-  .cursor::after {
-    content: '|';
-    animation: blink 1s step-end infinite;
-    font-weight: bold;
+  .panel::after {
+    content: '';
+    position: absolute;
+    inset: 1.1rem;
+    border: 1px dashed rgba(125,224,196,0.08);
+    border-radius: 1.15rem;
+    pointer-events: none;
   }
-  @keyframes blink {
-    from, to { color: transparent; }
-    50% { color: white; }
+  .panel-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
   }
-  @media (max-width: 600px) {
-    body {
-      padding: 1rem 0.85rem calc(6.5rem + env(safe-area-inset-bottom));
-    }
-    h1 { font-size: 1.5em; }
-    p { font-size: 0.9em; }
+  .panel-header span {
+    color: var(--muted);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    font-size: 0.8rem;
   }
+  .panel-title {
+    font-size: 1.25rem;
+    letter-spacing: 0.05em;
+  }
+  .panel-body p,
+  .panel-body li {
+    color: var(--text);
+    line-height: 1.8;
+    font-size: 1rem;
+  }
+  .panel-body ul {
+    list-style: none;
+    margin-top: 0.75rem;
+    display: grid;
+    gap: 0.75rem;
+  }
+  .panel-body li::before {
+    content: '›';
+    display: inline-block;
+    margin-right: 0.75rem;
+    color: var(--accent);
+  }
+  .card-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .metric-card {
+    background: linear-gradient(180deg, rgba(5, 16, 28, 0.94), rgba(7, 18, 33, 0.92));
+    border: 1px solid rgba(125,224,196,0.12);
+    border-radius: 1.2rem;
+    padding: 1rem;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.03);
+    border-left: 4px solid rgba(125,224,196,0.3);
+  }
+  .metric-card strong {
+    display: block;
+    color: var(--accent);
+    margin-bottom: 0.65rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    font-size: 0.82rem;
+  }
+  .metric-value {
+    font-size: 1.7rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .metric-note {
+    margin-top: 0.55rem;
+    color: var(--muted);
+    font-size: 0.92rem;
+  }
+  .mission-card {
+    display: grid;
+    gap: 0.85rem;
+    background: linear-gradient(180deg, rgba(7, 19, 35, 0.94), rgba(5, 15, 28, 0.94));
+    border: 1px solid rgba(125,224,196,0.12);
+    border-radius: 1.3rem;
+    padding: 1.2rem;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02);
+    border-left: 4px solid rgba(125,224,196,0.32);
+  }
+  .mission-card h3 {
+    font-size: 1.1rem;
+    letter-spacing: 0.05em;
+  }
+  .mission-card .status {
+    color: var(--accent);
+    font-size: 0.82rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+  .footer {
+    margin-top: 1.75rem;
+    color: var(--muted);
+    font-size: 0.95rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    justify-content: space-between;
+  }
+  .footer a { color: var(--accent); text-decoration: none; }
+  @media (max-width: 820px) { .card-grid { grid-template-columns: 1fr; } }
+  @media (max-width: 620px) { .page-body { padding: 1rem 0.9rem 2rem; } .panel { padding: 1rem; } }
 </style>
 </head>
 <body>
-  <div class="bsod-container">
-    <p>A problem has been detected and Windows has been shut down to prevent damage to your computer.</p>
-    <h1>[bleustrnad.com]<span class="cursor"></span></h1>
-    <p>If this is the first time you've seen this error screen, restart your computer. If this screen appears again, follow these steps:</p>
-    <p>Check to make sure any new hardware or software is properly installed. If this is a new installation, ask your hardware or software manufacturer for any Windows updates you might need.</p>
-    <p>If problems continue, disable or remove any newly installed hardware or software. Disable BIOS memory options such as caching or shadowing. If you need to use Safe Mode to remove or disable components, restart your computer, press F8 to select Advanced Startup Options, and then select Safe Mode.</p>
-    <div class="technical-info">
-      <p>Technical Information:</p>
-      <p>*** STOP: 0x000000ED (0x80F128D0, 0xc000009c, 0x00000000, 0x00000000)</p>
-    </div>
-  </div>
+  <main class="page-body">
+    <header>
+      <h1>Bleu Strnad</h1>
+      <p class="intro">A sailor, weather enthusiast, and aspiring Meteorology & Oceanography Officer (METOC) building marine intelligence systems.</p>
+    </header>
 
-  <script>
-    setTimeout(() => {
-      document.body.classList.add('fade-out');
-      
-      setTimeout(() => {
-        window.location.href = 'portfolio.html';
-      }, 1600);
-    }, 2000);
+    <section class="panel">
+      <div class="panel-header">
+        <span>ABOUT</span>
+      </div>
+      <div class="panel-body">
+        <p>I am devoted to solving problems to better understand nature. My goal is to protect others by providing insights into weather patterns while developing mission-focused solutions for weather, navigation, and maritime operations.</p>
+      </div>
+    </section>
 
-    document.querySelector('h1').style.cursor = 'pointer';
-    document.querySelector('h1').addEventListener('click', () => {
-      document.body.classList.add('fade-out');
-      setTimeout(() => {
-        window.location.href = 'portfolio.html';
-      }, 1600);
-    });
-  </script>
+    <section class="panel">
+      <div class="panel-header">
+        <span>PROJECTS</span>
+
+      </div>
+      <div class="panel-body">
+        <div class="mission-card">
+          <div class="status">CORPORAL</div>
+          <h3>Humanitarian GIS platform for people in need and people who want to serve.</h3>
+          <p><a href="corporal.html">Corporal</a> is a community-based iOS map app that connects people in need with local clothing, food, and shelter resources.</p>
+        </div>
+        <div class="mission-card">
+          <div class="status">CTFLFG</div>
+          <h3>CTF community looking-for-group forums website.</h3>
+          <p><a href="ctflfg.html">CTFLFG</a> is a Looking-for-Group forum designed for CTF competitors of all skill levels to connect and collaborate.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-header">
+        <span>CONTACT</span>
+      </div>
+      <div class="panel-body">
+        <p>Reach out via <a href="https://www.linkedin.com/in/alexander-strnad-4b3234227/" target="_blank" rel="noopener noreferrer">LinkedIn</a> or email me at <a href="mailto:strnadbleu@gmail.com">strnadbleu@gmail.com</a></p>
+      </div>
+    </section>
+  </main>
 </body>
 </html>
